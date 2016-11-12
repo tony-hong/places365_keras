@@ -3,6 +3,7 @@ import tensorflow as tf
 tf.python.control_flow_ops = tf
 
 from keras.models import Sequential
+from keras.utils import np_utils
 from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD
@@ -61,7 +62,6 @@ def ready_model(weights_path, n_classes):
 	model.add(Dense(365, activation='softmax'))
 
 	model.load_weights(weights_path)
-
 	# Freeze all layers except the last two
 	model.pop()
 	model.pop()
@@ -78,11 +78,10 @@ def process_image(img_path):
 	im[:,:,1] -= 116.779
 	im[:,:,2] -= 123.68
 	im = im.transpose((2,0,1))
-	im = np.expand_dims(im, axis=0)
 	return im
 
 
-def train_test_set(image_filenames, ratio = 0.8):
+def train_test_set(image_filenames, n_classes, ratio = 0.8):
 	X = []
 	y = []
 	random.shuffle(image_filenames.keys())
@@ -92,8 +91,9 @@ def train_test_set(image_filenames, ratio = 0.8):
 	split_ratio = int(len(X) * ratio)
 	X_train, y_train = X[:split_ratio], y[:split_ratio]
 	X_test, y_test = X[split_ratio:], y[split_ratio:]
-	X_train, y_train =  np.array(X_train), np.array(y_train)
-	X_test, y_test =  np.array(X_test), np.array(y_test)
+	# to_categorical
+	X_train, y_train =  np.array(X_train), np_utils.to_categorical(np.array(y_train), n_classes)
+	X_test, y_test =  np.array(X_test), np_utils.to_categorical(np.array(y_test), n_classes)
 	return (X_train, y_train), (X_test, y_test)
 
 
@@ -110,9 +110,8 @@ def ready_data(base_dir):
 		name_index_mapping[class_name] = class_index
 		index_name_mapping[class_index] = class_name
 	# Walk through directory, gathering names of images with their labels
-	n_classes = 0
+	n_classes = len(name_index_mapping)
 	for root, subdirs, files in os.walk(base_dir):
-		n_classes += 1
 		for filename in files:
 			file_path = os.path.join(root, filename)
 			assert file_path.startswith(base_dir)
@@ -123,20 +122,21 @@ def ready_data(base_dir):
 	return file_name_mapping, n_classes
 
 
-def fine_tune(model, file_name_map):
+def fine_tune(model, n_classes, file_name_map):
 	n_eopchs = 10
 	batch_size = 32
-	(X_train, y_train), (X_test, y_test) = train_test_set(file_name_map)
+	(X_train, y_train), (X_test, y_test) = train_test_set(file_name_map, n_classes)
 	model.fit(X_train,y_train,
 				nb_epoch = n_eopchs,
 				batch_size = batch_size,
 				callbacks = [TensorBoard(log_dir='/tmp/plaves_vgg16_finetune')])
-	loss_and_metrics = model.evaluate(X_test, y_test, batch_size=bs)
+	loss_and_metrics = model.evaluate(X_test, y_test, batch_size = 32)
 	model.save("finetuned_keras.h5")
-	return loss_and_metrics * 100.0
+	return loss_and_metrics
 
 
 if __name__ == "__main__":
 	file_name_map, n_classes = ready_data(sys.argv[1])
 	model = ready_model('places_vgg_keras.h5', n_classes)
-	print "Accuracy was %f%", fine_tune(model, file_name_map)
+	acc = fine_tune(model, n_classes, file_name_map)
+	print "Accuracy was ", acc
