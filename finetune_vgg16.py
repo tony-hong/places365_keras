@@ -129,7 +129,7 @@ def fine_tune(model, n_classes, file_name_map):
 	model.fit(X_train,y_train,
 				nb_epoch = n_eopchs,
 				batch_size = batch_size,
-				callbacks = [TensorBoard(log_dir='/tmp/plaves_vgg16_finetune')])
+				callbacks = [TensorBoard(log_dir='/tmp/places_vgg16_finetune')])
 	loss_and_metrics = model.evaluate(X_test, y_test, batch_size = 32)
 	model.save("finetuned_keras.h5")
 	return loss_and_metrics
@@ -137,6 +137,6 @@ def fine_tune(model, n_classes, file_name_map):
 
 if __name__ == "__main__":
 	file_name_map, n_classes = ready_data(sys.argv[1])
-	model = ready_model('places_vgg_keras.h5', n_classes)
+	model = ready_model('models/places/places_vgg_keras.h5', n_classes)
 	acc = fine_tune(model, n_classes, file_name_map)
 	print "Accuracy was ", acc

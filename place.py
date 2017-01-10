@@ -2,6 +2,7 @@
 import tensorflow as tf
 tf.python.control_flow_ops = tf
 
+import keras
 from keras.models import Sequential
 from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
@@ -11,6 +12,9 @@ import pickle
 import sys
 
 # Source for vgg16 implementation : https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3
+
+model = None
+labels = None
 
 def VGG_16(weights_path=None):
 	model = Sequential()
@@ -63,7 +67,9 @@ def VGG_16(weights_path=None):
 	return model
 
 
-def predict(model, labels, img_path):
+def predict(img_path, ret_dict):
+	global model
+	global labels
 	im = cv2.resize(cv2.imread(img_path), (224, 224)).astype(np.float32)
 	im[:,:,0] -= 103.939
 	im[:,:,1] -= 116.779
@@ -76,12 +82,23 @@ def predict(model, labels, img_path):
 	results = []
 	for x in out:
 		results.append(labels[x])
-	return results
+	ret_dict['place'] = results[:5]
+	return results[:5]
 
+
+def init():
+	global model
+	global labels
+	keras.backend.set_image_dim_ordering('th')
+	model = VGG_16('models/places/places_vgg_keras.h5')
+	labels = pickle.load(open('models/places/labels.pkl','rb'))
+
+
+init()
+print "Loaded place module"
 
 if __name__ == "__main__":
 	im_name = sys.argv[1]
-	model = VGG_16('places_vgg_keras.h5')
-	labels = pickle.load(open('labels.pkl','rb'))
-	z = predict(model, labels, im_name)
+	ret_dict = {}
+	z = predict(im_name, ret_dict)
 	print z[:5]
