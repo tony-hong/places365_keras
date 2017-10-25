@@ -1,6 +1,4 @@
-# Fix for Tensorflow import error while using Keras
 import tensorflow as tf
-tf.python.control_flow_ops = tf
 
 from keras.models import Sequential
 from keras.utils import np_utils
@@ -13,6 +11,12 @@ import pickle
 import sys
 import random
 import os
+
+# Don't hog GPU
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True
+sess = tf.Session(config=config)
+keras.backend.set_session(sess)
 
 # Source for vgg16 implementation : https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3
 
