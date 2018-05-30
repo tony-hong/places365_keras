@@ -122,15 +122,17 @@ def get_features(data_dir, version_d, vgg_model):
             res_mat[img_id] = feat_vec
 
             # DEBUG
-            print features
-            print features.shape
+            # print features
+            # print features.shape
             # print features[features!=0]
             # print features[features!=0].shape
-            if i > 5:
-                break
+            # if i > 5:
+            #     break
+            if i % 100:
+                print i
 
-    print res_mat
-    print res_mat.shape
+    # print res_mat
+    # print res_mat.shape
     
     return res_mat
 
@@ -138,7 +140,7 @@ def get_features(data_dir, version_d, vgg_model):
 if __name__ == "__main__":
     DATA_DIR = '../MSCOCO'
     version_d = dict()
-    # version_d['train'] = 'train2014'
+    version_d['train'] = 'train2014'
     version_d['valid'] = 'val2014'
 
     print "Loaded place module"
@@ -146,6 +148,10 @@ if __name__ == "__main__":
     vgg_model = VGG_16('models/places/places_vgg_keras.h5')
     labels = pickle.load(open('models/places/labels.pkl','rb'))
 
-    get_features(DATA_DIR, version_d, vgg_model)
+    res_mat = get_features(DATA_DIR, version_d, vgg_model)
+    # print res_mat[9]
+    
+    with open("coco_imgs", 'w') as f: 
+        np.save(f, res_mat)
 
 
