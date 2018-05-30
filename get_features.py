@@ -10,6 +10,7 @@ from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD
 import cv2
+import skimage.io as io
 from pycocotools.coco import COCO
 
 from places_utils import preprocess_input
@@ -106,7 +107,11 @@ def get_features(data_dir, version_d, vgg_model):
         imgIds_d[k] = coco_d[k].getImgIds(catIds=[])
         print("Number of images: ", len(imgIds_d[k]))
         for i, img_id in enumerate(imgIds_d[k], start=0):
-            img = coco_d[k].loadImgs(img_id)[0]
+            print img_id
+            img_dat = coco_d[k].loadImgs(img_id)[0]
+            # print img
+            img = io.imread('http://mscoco.org/images/%d'%(img_id))
+
             # transformation
             x = image.img_to_array(img)
             x = np.expand_dims(x, axis=0)
@@ -116,16 +121,16 @@ def get_features(data_dir, version_d, vgg_model):
             # DEBUG
             print features
             print features.shape
-            print features[features!=0]
-            print features[features!=0].shape
-            if i > 10:
+            # print features[features!=0]
+            # print features[features!=0].shape
+            if i > 5:
                 break
 
 
 if __name__ == "__main__":
     DATA_DIR = '../MSCOCO'
     version_d = dict()
-    version_d['train'] = 'train2014'
+    # version_d['train'] = 'train2014'
     version_d['valid'] = 'val2014'
 
     print "Loaded place module"
