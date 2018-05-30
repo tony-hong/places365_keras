@@ -118,17 +118,19 @@ def get_features(data_dir, version_d, vgg_model):
             x = image.img_to_array(img)
             x = np.expand_dims(x, axis=0)
             x = preprocess_input(x)
+            if x.all() == -1:
+                continue
+            if x.ndim != 4:
+                continue
             feat_vec = model.predict(x).reshape(-1)
             res_mat[img_id] = feat_vec
 
             # DEBUG
-            # print features
-            # print features.shape
-            # print features[features!=0]
-            # print features[features!=0].shape
+            # print feat_vec
+            # print feat_vec.shape
             # if i > 5:
             #     break
-            if i % 100:
+            if i % 100 == 0:
                 print i
 
     # print res_mat
@@ -150,7 +152,7 @@ if __name__ == "__main__":
 
     res_mat = get_features(DATA_DIR, version_d, vgg_model)
     # print res_mat[9]
-    
+
     with open("coco_imgs", 'w') as f: 
         np.save(f, res_mat)
 
