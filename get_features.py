@@ -99,6 +99,8 @@ def get_features(data_dir, version_d, vgg_model):
 
     model = Model(vgg_model.input, vgg_model.get_layer('dense2').output)
 
+    res_mat = np.zeros((581929, 4096))
+
     for k in version_d.keys():
         instance_fn_d = '{}/annotations/instances_{}.json'.format(data_dir, version_d[k])
         # initialize COCO api for instance annotations
@@ -110,13 +112,14 @@ def get_features(data_dir, version_d, vgg_model):
             print img_id
             img_dat = coco_d[k].loadImgs(img_id)[0]
             # print img
-            img = io.imread('http://mscoco.org/images/%d'%(img_id))
-
+            img = io.imread(img_dat['coco_url'])
+            img = cv2.resize(img, (224, 224))
             # transformation
             x = image.img_to_array(img)
             x = np.expand_dims(x, axis=0)
             x = preprocess_input(x)
-            features = model.predict(x)
+            feat_vec = model.predict(x).reshape(-1)
+            res_mat[img_id] = feat_vec
 
             # DEBUG
             print features
@@ -125,6 +128,11 @@ def get_features(data_dir, version_d, vgg_model):
             # print features[features!=0].shape
             if i > 5:
                 break
+
+    print res_mat
+    print res_mat.shape
+    
+    return res_mat
 
 
 if __name__ == "__main__":
