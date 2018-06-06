@@ -112,7 +112,8 @@ def get_features(data_dir, version_d, vgg_model):
             print img_id
             img_dat = coco_d[k].loadImgs(img_id)[0]
             # print img
-            img = io.imread(img_dat['coco_url'])
+            img_fn = '{}/{}/COCO_{}_000000{}.jpg'.format(data_dir, version_d[k], version_d[k], img_id)
+            img = io.imread(img_fn)
             img = cv2.resize(img, (224, 224))
             # transformation
             x = image.img_to_array(img)
