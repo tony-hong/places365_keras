@@ -109,10 +109,13 @@ def get_features(data_dir, version_d, vgg_model):
         imgIds_d[k] = coco_d[k].getImgIds(catIds=[])
         print("Number of images: ", len(imgIds_d[k]))
         for i, img_id in enumerate(imgIds_d[k], start=0):
-            print img_id
+            # print img_id
             img_dat = coco_d[k].loadImgs(img_id)[0]
             # print img
-            img_fn = '{}/{}/COCO_{}_000000{}.jpg'.format(data_dir, version_d[k], version_d[k], img_id)
+            pad_img_id = "%012d" % img_id
+            img_fn = '{}/{}/COCO_{}_{}.jpg'.format(data_dir, version_d[k], version_d[k], pad_img_id)
+
+
             img = io.imread(img_fn)
             img = cv2.resize(img, (224, 224))
             # transformation
