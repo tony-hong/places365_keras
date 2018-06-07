@@ -1,3 +1,4 @@
+import numpy as np
 from keras import backend as K
 
 def preprocess_input(x, dim_ordering='default'):
