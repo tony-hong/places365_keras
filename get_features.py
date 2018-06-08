@@ -114,8 +114,7 @@ def get_features(data_dir, version_d, vgg_model):
             # print img
             pad_img_id = "%012d" % img_id
             img_fn = '{}/{}/COCO_{}_{}.jpg'.format(data_dir, version_d[k], version_d[k], pad_img_id)
-
-
+            
             img = io.imread(img_fn)
             img = cv2.resize(img, (224, 224))
             # transformation
@@ -156,8 +155,8 @@ if __name__ == "__main__":
 
     res_mat = get_features(DATA_DIR, version_d, vgg_model)
     # print res_mat[9]
-
-    with open("coco_imgs", 'w') as f: 
-        np.save(f, res_mat)
+    
+    result_fn = "coco_imgs"
+    np.save(result_fn, res_mat)
 
 
