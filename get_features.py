@@ -99,7 +99,7 @@ def get_features(data_dir, version_d, vgg_model):
 
     model = Model(vgg_model.input, vgg_model.get_layer('dense2').output)
 
-    res_mat = np.zeros((581929, 4096))
+    res_mat = np.zeros((581930, 4096))
 
     for k in version_d.keys():
         instance_fn_d = '{}/annotations/instances_{}.json'.format(data_dir, version_d[k])
@@ -149,7 +149,7 @@ def get_labels(data_dir, version_d, vgg_model):
     # TODO
     model = Model(vgg_model.input, vgg_model.output)
 
-    res_mat = np.zeros((581929, 5))
+    res_mat = np.zeros((581930, 5))
 
     for k in version_d.keys():
         instance_fn_d = '{}/annotations/instances_{}.json'.format(data_dir, version_d[k])
@@ -178,7 +178,7 @@ def get_labels(data_dir, version_d, vgg_model):
             feat_vec = model.predict(x).reshape(-1)
             reverser_feat_vec = feat_vec[::-1]
             res_mat[img_id] = feat_vec[:5]
-            
+
             # DEBUG
             # print feat_vec
             # print feat_vec.shape
