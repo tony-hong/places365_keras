@@ -142,6 +142,57 @@ def get_features(data_dir, version_d, vgg_model):
     return res_mat
 
 
+def get_labels(data_dir, version_d, vgg_model):
+    coco_d = dict()
+    imgIds_d = dict()
+
+    # TODO
+    model = Model(vgg_model.input, vgg_model.output)
+
+    res_mat = np.zeros((581929, 5))
+
+    for k in version_d.keys():
+        instance_fn_d = '{}/annotations/instances_{}.json'.format(data_dir, version_d[k])
+        # initialize COCO api for instance annotations
+        coco_d[k] = COCO(instance_fn_d)
+        # get all images containing given categories, select one at random
+        imgIds_d[k] = coco_d[k].getImgIds(catIds=[])
+        print("Number of images: ", len(imgIds_d[k]))
+        for i, img_id in enumerate(imgIds_d[k], start=0):
+            # print img_id
+            img_dat = coco_d[k].loadImgs(img_id)[0]
+            # print img
+            pad_img_id = "%012d" % img_id
+            img_fn = '{}/{}/COCO_{}_{}.jpg'.format(data_dir, version_d[k], version_d[k], pad_img_id)
+            
+            img = io.imread(img_fn)
+            img = cv2.resize(img, (224, 224))
+            # transformation
+            x = image.img_to_array(img)
+            x = np.expand_dims(x, axis=0)
+            x = preprocess_input(x)
+            if x.all() == -1:
+                continue
+            if x.ndim != 4:
+                continue
+            feat_vec = model.predict(x).reshape(-1)
+            reverser_feat_vec = feat_vec[::-1]
+            res_mat[img_id] = feat_vec[:5]
+            
+            # DEBUG
+            # print feat_vec
+            # print feat_vec.shape
+            # if i > 5:
+            #     break
+            if i % 100 == 0:
+                print i
+
+    # print res_mat
+    # print res_mat.shape
+    
+    return res_mat
+
+
 if __name__ == "__main__":
     DATA_DIR = '../MSCOCO'
     version_d = dict()
@@ -153,7 +204,8 @@ if __name__ == "__main__":
     vgg_model = VGG_16('models/places/places_vgg_keras.h5')
     labels = pickle.load(open('models/places/labels.pkl','rb'))
 
-    res_mat = get_features(DATA_DIR, version_d, vgg_model)
+    # res_mat = get_features(DATA_DIR, version_d, vgg_model)
+    res_mat = get_labels(DATA_DIR, version_d, vgg_model)
     # print res_mat[9]
     
     result_fn = "coco_imgs"
