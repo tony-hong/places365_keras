@@ -142,14 +142,14 @@ def get_features(data_dir, version_d, vgg_model):
     return res_mat
 
 
-def get_labels(data_dir, version_d, vgg_model):
+def get_labels(data_dir, version_d, vgg_model, label_dict, topN=5):
     coco_d = dict()
     imgIds_d = dict()
 
     # TODO
     model = Model(vgg_model.input, vgg_model.output)
 
-    res_mat = np.zeros((581930, 5))
+    res_mat = np.zeros((581930, topN))
 
     for k in version_d.keys():
         instance_fn_d = '{}/annotations/instances_{}.json'.format(data_dir, version_d[k])
@@ -176,12 +176,12 @@ def get_labels(data_dir, version_d, vgg_model):
             if x.ndim != 4:
                 continue
             feat_vec = model.predict(x).reshape(-1)
-            reverser_feat_vec = feat_vec[::-1]
-            res_mat[img_id] = feat_vec[:5]
+            label_vec = argsort(feat_vec)
+            reverser_label_vec = label_vec[::-1]
+            res_mat[img_id] = reverser_label_vec[:topN]
 
             # DEBUG
-            # print feat_vec
-            # print feat_vec.shape
+            # print reverser_label_vec[:topN]
             # if i > 5:
             #     break
             if i % 100 == 0:
@@ -202,13 +202,13 @@ if __name__ == "__main__":
     print "Loaded place module"
     keras.backend.set_image_dim_ordering('th')
     vgg_model = VGG_16('models/places/places_vgg_keras.h5')
-    labels = pickle.load(open('models/places/labels.pkl','rb'))
+    label_dict = pickle.load(open('models/places/labels.pkl','rb'))
 
     # res_mat = get_features(DATA_DIR, version_d, vgg_model)
-    res_mat = get_labels(DATA_DIR, version_d, vgg_model)
+    res_mat = get_labels(DATA_DIR, version_d, vgg_model, label_dict)
     # print res_mat[9]
     
-    result_fn = "coco_imgs"
+    # result_fn = "coco_imgs"
+    result_fn = "coco_imgs_labels"
     np.save(result_fn, res_mat)
-
-
+    
