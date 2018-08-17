@@ -1,4 +1,4 @@
-import pickle
+import ccPickle
 import sys
 
 import numpy as np
@@ -177,7 +177,7 @@ def get_labels(data_dir, version_d, vgg_model, label_dict, topN=5):
             if x.ndim != 4:
                 continue
             feat_vec = model.predict(x).reshape(-1)
-            label_vec = argsort(feat_vec)
+            label_vec = np.argsort(feat_vec)
             reverser_label_vec = label_vec[::-1]
             res_mat[img_id] = reverser_label_vec[:topN]
 
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     print "Loaded place module"
     keras.backend.set_image_dim_ordering('th')
     vgg_model = VGG_16('models/places/places_vgg_keras.h5')
-    label_dict = pickle.load(open('models/places/labels.pkl','rb'))
+    label_dict = cPickle.load(open('models/places/labels.pkl','rb'))
 
     # res_mat = get_features(DATA_DIR, version_d, vgg_model)
     res_mat, res_dict = get_labels(DATA_DIR, version_d, vgg_model, label_dict)
@@ -214,4 +214,4 @@ if __name__ == "__main__":
     # result_fn = "coco_imgs"
     result_fn = "coco_imgs_labels"
     np.save(result_fn, res_mat)
-    pickle.save(res_dict, result_fn + '_dict')
+    cPickle.dump(res_dict, open(result_fn + '_dict', 'wb'))
