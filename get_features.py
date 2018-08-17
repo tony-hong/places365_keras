@@ -150,6 +150,7 @@ def get_labels(data_dir, version_d, vgg_model, label_dict, topN=5):
     model = Model(vgg_model.input, vgg_model.output)
 
     res_mat = np.zeros((581930, topN))
+    res_dict = dict()
 
     for k in version_d.keys():
         instance_fn_d = '{}/annotations/instances_{}.json'.format(data_dir, version_d[k])
@@ -180,6 +181,8 @@ def get_labels(data_dir, version_d, vgg_model, label_dict, topN=5):
             reverser_label_vec = label_vec[::-1]
             res_mat[img_id] = reverser_label_vec[:topN]
 
+            res_dict[img_id] = label_dict[reverser_label_vec[0]]
+
             # DEBUG
             # print reverser_label_vec[:topN]
             # if i > 5:
@@ -190,7 +193,7 @@ def get_labels(data_dir, version_d, vgg_model, label_dict, topN=5):
     # print res_mat
     # print res_mat.shape
     
-    return res_mat
+    return res_mat, res_dict
 
 
 if __name__ == "__main__":
@@ -205,10 +208,10 @@ if __name__ == "__main__":
     label_dict = pickle.load(open('models/places/labels.pkl','rb'))
 
     # res_mat = get_features(DATA_DIR, version_d, vgg_model)
-    res_mat = get_labels(DATA_DIR, version_d, vgg_model, label_dict)
+    res_mat, res_dict = get_labels(DATA_DIR, version_d, vgg_model, label_dict)
     # print res_mat[9]
     
     # result_fn = "coco_imgs"
     result_fn = "coco_imgs_labels"
     np.save(result_fn, res_mat)
-    
+    pickle.save(res_dict, result_fn + '_dict')
